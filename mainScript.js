@@ -1,15 +1,16 @@
+//This Function is used to extract data from EXPA, you have to write your access token instead of "ACCESS_TOKEN" 
+//This function takes a query as input to send it to the server and extract the data depend on it
 function dataExtraction(graphql)
 {
-  
   var requestOptions = {
     'method': 'post',
     'payload': graphql,
     'contentType':'application/json',
     'headers':{
-      'access_token': "" //write the access token here
+      'access_token': "ACCESS_TOKEN" //write the access token here
     }
   };
-  var response = UrlFetchApp.fetch("https://gis-api.aiesec.org/graphql?access_token=", requestOptions);  //write the access token here
+  var response = UrlFetchApp.fetch("https://gis-api.aiesec.org/graphql?access_token=ACCESS_TOKEN", requestOptions);  //write the access token here
   var recievedDate = JSON.parse(response.getContentText());
   return recievedDate.data.allOpportunityApplication.data;
 }
