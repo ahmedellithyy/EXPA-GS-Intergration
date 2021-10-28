@@ -418,3 +418,11 @@ function getLastRow(sheet)
   }
   return lastRow;
 }
+
+
+function onOpen() {  
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Run')
+      .addItem("Run the code", 'main')
+      .addToUi();
+}
