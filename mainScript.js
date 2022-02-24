@@ -247,6 +247,8 @@ function main()
   for(var i = 0; i < 2;i++){
 
   if(i == 0){
+    // Write LC_NAME as it's existed in const file
+      if(lc_codes["LC_NAME"][1] == -1) continue
       var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("ICX Database/Auditing"); // write sheet name 
       var standardSheet =  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("ICX Standards Tracker"); 
   }
