@@ -1,16 +1,15 @@
-//This Function is used to extract data from EXPA, you have to write your access token instead of "ACCESS_TOKEN" 
-//This function takes a query as input to send it to the server and extract the data depend on it
 function dataExtraction(graphql)
 {
+  
   var requestOptions = {
     'method': 'post',
     'payload': graphql,
     'contentType':'application/json',
     'headers':{
-      'access_token': "ACCESS_TOKEN" //write the access token here
+      'access_token': "ACCESS_TOKEN"
     }
   };
-  var response = UrlFetchApp.fetch("https://gis-api.aiesec.org/graphql?access_token=ACCESS_TOKEN", requestOptions);  //write the access token here
+  var response = UrlFetchApp.fetch(`https://gis-api.aiesec.org/graphql?access_token=${access_token}`, requestOptions);
   var recievedDate = JSON.parse(response.getContentText());
   return recievedDate.data.allOpportunityApplication.data;
 }
@@ -25,7 +24,7 @@ function dataManipulation(dataSet)
  {
       
   rows.push([
-    dataSet[i].person.id+"_"+dataSet[i].opportunity.id, dataSet[i].person.full_name, dataSet[i].status,""/*remote status*/, "",
+    dataSet[i].person.id+"_"+dataSet[i].opportunity.id, dataSet[i].person.full_name,dataSet[i].opportunity.programme.short_name_display, dataSet[i].status,""/*remote status*/, "",
     
     dataSet[i].person.email,  "" /*phone number*/, dataSet[i].person.home_mc.name, dataSet[i].person.home_lc.name, "",
     
@@ -40,13 +39,16 @@ function dataManipulation(dataSet)
  ]);
 
  standards.push([
-   dataSet[i].person.id+"_"+dataSet[i].opportunity.id, dataSet[i].person.full_name, dataSet[i].opportunity.programme.short_name_display, dataSet[i].status,""/*remote status*/,"",
-   dataSet[i].person.email,  "" /*phone number*/, dataSet[i].person.home_mc.name, dataSet[i].person.home_lc.name, "",
-   dataSet[i].opportunity.home_mc.name, dataSet[i].opportunity.host_lc.name,"https://aiesec.org/opportunity/"+dataSet[i].opportunity.id,""/*duration_type*/,""/*Project Fees*/,""/*salary Fees*/,"",
+   dataSet[i].person.id+"_"+dataSet[i].opportunity.id, 
+   dataSet[i].person.full_name, 
+   dataSet[i].opportunity.programme.short_name_display, 
+   dataSet[i].status,
+   ""/*remote status*/,
+   "",
    ""/*APD Date*/,
    ""/*RE date*/,
    ""/*Fi date*/,
-   ""/*remote date*/,"","",
+   ""/*remote date*/,
    "",""/*standard 1*/,
    "",""/*standard 2*/,
    "",""/*standard 3*/,
@@ -66,88 +68,83 @@ function dataManipulation(dataSet)
  ])
 
   if( dataSet[i].opportunity.remote_opportunity == true){
-        rows[i][3] = "Yes";
+        rows[i][4] = "Yes";
         standards[i][4] = "Yes";
   }
   else{
-    rows[i][3] = "No"
+    rows[i][4] = "No"
     standards[i][4] = "No";
 
   }
 
   if (dataSet[i].person.contact_detail != null){
-      rows[i][6] = dataSet[i].person.contact_detail.phone;
-      standards[i][7] = dataSet[i].person.contact_detail.phone;
+      rows[i][7] = dataSet[i].person.contact_detail.phone;
 
   }
 
   if(dataSet[i].opportunity.programme.short_name_display == "GV")
   {
-      rows[i][15] = dataSet[i].opportunity.project_fee.fee+" "+dataSet[i].opportunity.project_fee.currency;
-      standards[i][15] = dataSet[i].opportunity.project_fee.fee+" "+dataSet[i].opportunity.project_fee.currency;
+      rows[i][16] = dataSet[i].opportunity.project_fee.fee+" "+dataSet[i].opportunity.project_fee.currency;
 
   }
   else{
     if(dataSet[i].opportunity.specifics_info.salary == null){
         dataSet[i].opportunity.specifics_info.salary = 0;
-        rows[i][16] = dataSet[i].opportunity.specifics_info.salary+" "+dataSet[i].opportunity.specifics_info.salary_currency.alphabetic_code;
-        standards[i][16] = dataSet[i].opportunity.specifics_info.salary+" "+dataSet[i].opportunity.specifics_info.salary_currency.alphabetic_code;
+        rows[i][17] = dataSet[i].opportunity.specifics_info.salary+" "+dataSet[i].opportunity.specifics_info.salary_currency.alphabetic_code;
     }
     else{
-      rows[i][16] = dataSet[i].opportunity.specifics_info.salary+" "+dataSet[i].opportunity.specifics_info.salary_currency.alphabetic_code;
-      standards[i][16] = dataSet[i].opportunity.specifics_info.salary+" "+dataSet[i].opportunity.specifics_info.salary_currency.alphabetic_code;
+      rows[i][17] = dataSet[i].opportunity.specifics_info.salary+" "+dataSet[i].opportunity.specifics_info.salary_currency.alphabetic_code;
 
     }
   }
   if(dataSet[i].slot!=null){
-    rows[i][19] = dataSet[i].slot.start_date;
-    rows[i][20] = dataSet[i].slot.end_date;
+    rows[i][20] = dataSet[i].slot.start_date;
+    rows[i][21] = dataSet[i].slot.end_date;
   }
 
   if(dataSet[i].opportunity.opportunity_duration_type != null){
-      rows[i][14]=dataSet[i].opportunity.opportunity_duration_type.duration_type;
-      standards[i][14]=dataSet[i].opportunity.opportunity_duration_type.duration_type;
+      rows[i][15]=dataSet[i].opportunity.opportunity_duration_type.duration_type;
 
   }
 
   // set approval, realization and experience end dates
     if(dataSet[i].date_approved != null){
-      rows[i][18]=  dataSet[i].date_approved.toString().substring(0,10);
-      standards[i][18]=  dataSet[i].date_approved.toString().substring(0,10);
+      rows[i][19]=  dataSet[i].date_approved.toString().substring(0,10);
+      standards[i][6]=  dataSet[i].date_approved.toString().substring(0,10);
 
     }
     else{
-          rows[i][18]=  dataSet[i].updated_at.toString().substring(0,10);
-          standards[i][18]=  dataSet[i].updated_at.toString().substring(0,10);
+          rows[i][19]=  dataSet[i].updated_at.toString().substring(0,10);
+          standards[i][6]=  dataSet[i].updated_at.toString().substring(0,10);
 
     }
 
     if(dataSet[i].status == "remote_realized" ){
-          rows[i][23]=  dataSet[i].updated_at.toString().substring(0,10);
-          standards[i][21]=  dataSet[i].updated_at.toString().substring(0,10);
+          rows[i][24]=  dataSet[i].updated_at.toString().substring(0,10);
+          standards[i][9]=  dataSet[i].updated_at.toString().substring(0,10);
          
     }
     if(dataSet[i].status == "realized" )
     { 
       if(dataSet[i].date_realized != null){
-        rows[i][21]=  dataSet[i].date_realized.toString().substring(0,10);
-        standards[i][19]=  dataSet[i].date_realized.toString().substring(0,10);
+        rows[i][22]=  dataSet[i].date_realized.toString().substring(0,10);
+        standards[i][7]=  dataSet[i].date_realized.toString().substring(0,10);
       }
       if(dataSet[i].experience_end_date != null){
-              rows[i][22]=  dataSet[i].experience_end_date.toString().substring(0,10);
-              standards[i][20]=  dataSet[i].experience_end_date.toString().substring(0,10);
+              rows[i][23]=  dataSet[i].experience_end_date.toString().substring(0,10);
+              standards[i][8]=  dataSet[i].experience_end_date.toString().substring(0,10);
         }
       
     }
     else if (dataSet[i].status == "finished" || dataSet[i].status == "completed"){
       if(dataSet[i].date_realized != null){
-        rows[i][21]=  dataSet[i].date_realized.toString().substring(0,10);
-        standards[i][19]=  dataSet[i].date_realized.toString().substring(0,10);
+        rows[i][22]=  dataSet[i].date_realized.toString().substring(0,10);
+        standards[i][7]=  dataSet[i].date_realized.toString().substring(0,10);
 
       }
         if(dataSet[i].experience_end_date != null){
-              rows[i][22]=  dataSet[i].experience_end_date.toString().substring(0,10);
-              standards[i][20]=  dataSet[i].experience_end_date.toString().substring(0,10);
+              rows[i][23]=  dataSet[i].experience_end_date.toString().substring(0,10);
+              standards[i][8]=  dataSet[i].experience_end_date.toString().substring(0,10);
         }
         
     }
@@ -155,7 +152,7 @@ function dataManipulation(dataSet)
     {
       if(dataSet[i].standards[k].standard_option != null ){
         r = k*2;
-       standards[i][25+r] = dataSet[i].standards[k].standard_option.meta.option
+       standards[i][11+r] = dataSet[i].standards[k].standard_option.meta.option
      }
     }
  }
@@ -166,7 +163,7 @@ function dataManipulation(dataSet)
 function dataUpdating(sheet,standardSheet, rows, standards)
 {
   var lr = getLastRow(sheet);
-  var oldRows = sheet.getRange(5,1,lr,24).getValues();
+  var oldRows = sheet.getRange(5,1,lr,25).getValues();
   var newRows = [];
   for(var i =0; i < rows.length;i++)
   {
@@ -176,13 +173,13 @@ function dataUpdating(sheet,standardSheet, rows, standards)
             if(rows[i][0] == oldRows[j][0])
             {
                 duplicated = true;
-                oldRows[j][2] = rows[i][2];
-                if(rows[i][2] == "realized" || rows[i][2] == "finished" || rows[i][2] == "completed"){
-                  oldRows[j].splice(21,1,rows[i][21]);
+                oldRows[j][3] = rows[i][3];
+                if(rows[i][3] == "realized" || rows[i][3] == "finished" || rows[i][3] == "completed"){
                   oldRows[j].splice(22,1,rows[i][22]);
+                  oldRows[j].splice(23,1,rows[i][23]);
                 }
                 else if(rows[i][2] == "remote_realized"){
-                  oldRows[j].splice(23,1,rows[i][23]);
+                  oldRows[j].splice(24,1,rows[i][24]);
                 }
             }
             
@@ -192,17 +189,17 @@ function dataUpdating(sheet,standardSheet, rows, standards)
       }
   }
 
-  afterEdits = sheet.getRange(5,1,oldRows.length,24).setValues(oldRows);
+  afterEdits = sheet.getRange(5,1,oldRows.length,25).setValues(oldRows);
 
   if(newRows.length > 0){
-    dataRange = sheet.getRange(lr+5,1,newRows.length,24).setValues(newRows);
+    dataRange = sheet.getRange(lr+5,1,newRows.length,25).setValues(newRows);
   }
 
 
   lr = getLastRow(standardSheet);
-  oldRows = standardSheet.getRange(5,1,lr,56).getValues();
+  oldRows = standardSheet.getRange(5,1,lr,42).getValues();
   newRows = [];
-  for(var i =0; i < rows.length;i++)
+  for(var i =0; i < standards.length;i++)
   {
       var duplicated = false;
       for(var j = 0; j <oldRows.length ;j++)
@@ -213,14 +210,14 @@ function dataUpdating(sheet,standardSheet, rows, standards)
                 oldRows[j][3] = standards[i][3];
                 for(var k =0; k < 16;k++){
                     r = k*2;
-                    oldRows[j].splice(25+r,1,standards[i][25+r])
+                    oldRows[j].splice(11+r,1,standards[i][10+r])
                 }
                 if(rows[i][2] == "realized" || rows[i][2] == "finished" || rows[i][2] == "completed"){
-                  oldRows[j].splice(19,1,rows[i][19]);
-                  oldRows[j].splice(20,1,rows[i][20]);
+                  oldRows[j].splice(7,1,rows[i][19]);
+                  oldRows[j].splice(8,1,rows[i][20]);
                 }
                 else if(rows[i][2] == "remote_realized"){
-                  oldRows[j].splice(21,1,rows[i][21]);
+                  oldRows[j].splice(9,1,rows[i][21]);
                 }
             }
             
@@ -230,10 +227,10 @@ function dataUpdating(sheet,standardSheet, rows, standards)
       }
   }
 
-  afterEdits = standardSheet.getRange(5,1,oldRows.length,56).setValues(oldRows);
+  afterEdits = standardSheet.getRange(5,1,oldRows.length,42).setValues(oldRows);
 
   if(newRows.length > 0){
-    dataRange = standardSheet.getRange(lr+5,1,newRows.length,56).setValues(newRows);
+    dataRange = standardSheet.getRange(lr+5,1,newRows.length,42).setValues(newRows);
   }
 
 
@@ -294,16 +291,6 @@ function main()
   var dataSet_Breaks = dataExtraction(graphql_Breaks);
   updateBreaks(sheet,standardSheet,dataSet_Breaks)
 
-  var queryApplications = `query{allOpportunityApplication(\n\t\tfilters:\n\t\t{\n      person_home_lc:${lcCode}\n      created_at:{from:\"01/08/2021\"}\n      \n\t\t}\n    \n    page:1\n    per_page:5000\n\t)\n\t{\n    data\n    {\n   id\n   person\n      {\n        id\n        full_name\n      managers{full_name}  \n      }\n      created_at\n      \n      status\n     }\n  }\n}`
-  var graphql_Applications = JSON.stringify({query: queryApplications});
-  var dataSet_Applications = dataExtraction(graphql_Applications);
-  updateApplications(dataSet_Applications)
-
-  var queryOpen = `query{allOpportunityApplication(\n\t\tfilters:\n\t\t{\n      opportunity_home_lc:${lcCode}\n      created_at:{from:\"01/08/2021\"}\n      status:"open"\n\t\t}\n    \n    page:1\n    per_page:5000\n\t)\n\t{\n    data\n    {\n id\n      person\n      {\n        id\n        full_name\n      managers{full_name}  \n      }\n      created_at\n      \n      status\n     }\n  }\n}`
-  var graphql_Open = JSON.stringify({query:queryOpen});
-  var dataSet_Open = dataExtraction(graphql_Open)
-  udapteOpen(dataSet_Open)
-
  }
   var now = new Date();
   sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Interface"); // write sheet name 
@@ -313,97 +300,18 @@ function main()
 }
 
 function updateBreaks(sheet,standardSheet,breaks){
- var rows = [];
- for(var i = 0; i < breaks.length; i++){
-    rows.push([
-    breaks[i].person.id+"_"+breaks[i].opportunity.id,breaks[i].status])
-  }
-
-  var lr = getLastRow(sheet);
-  var oldRows = sheet.getRange(5,1,lr,4).getValues();
-  for(var i =0; i < rows.length;i++)
-  {
-      for(var j = 0; j <oldRows.length ;j++)
-      {
-            if(rows[i][0] == oldRows[j][0])
-            {
-                oldRows[j][2] = rows[i][1];
-            } 
+  for(var i = 0; i < breaks.length; i++){
+    if(breaks[i].person != null && breaks[i].opportunity != null){
+      var rowIndexInSheet = sheet.createTextFinder(breaks[i].person.id+"_"+breaks[i].opportunity.id).matchEntireCell(false).findAll().map(x => x.getRow())
+      var rowIndexInStandardSheet = standardSheet.createTextFinder(breaks[i].person.id+"_"+breaks[i].opportunity.id).matchEntireCell(false).findAll().map(x => x.getRow())
+      if(rowIndexInSheet.length>0){
+        sheet.getRange(rowIndexInSheet,4).setValue(breaks[i].status)
+        standardSheet.getRange(rowIndexInStandardSheet,4).setValue(breaks[i].status) 
       }
-  }
-    afterEdits = sheet.getRange(5,1,oldRows.length,4).setValues(oldRows);
-
-  var lr = getLastRow(standardSheet);
-  var oldRows = standardSheet.getRange(5,1,lr,4).getValues();
-  for(var i =0; i < rows.length;i++)
-  {
-      for(var j = 0; j <oldRows.length ;j++)
-      {
-            if(rows[i][0] == oldRows[j][0])
-            {
-                oldRows[j][3] = rows[i][1];
-            } 
-      }
-  }
-    afterEdits = standardSheet.getRange(5,1,oldRows.length,4).setValues(oldRows);
-}
-
-function updateApplications(applications){
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("OGX Applicants"); // write sheet name 
-  var rows = [];
-  for(var i = 0; i < applications.length; i++){
-    rows.push([applications[i].id, applications[i].person.full_name, applications[i].status, applications[i].created_at, "", ""])
-    if(applications[i].person.managers != null){
-      rows[i][4] = "Yes"
-      var managers = []
-      for(var j = 0; j < applications[i].person.managers.length; j++){
-        managers.push(applications[i].person.managers[j].full_name+",")
-      }
-      rows[i][5] = managers;
     }
-    else{
-      rows[i][4] = "No"
-    }
-    
   }
-
-  var lr = getLastRow(sheet);
-  var oldRows = sheet.getRange(3,1,lr,6).getValues();
-  var newRows =[]
-  for(var i =0; i < rows.length;i++)
-  {       
-      var duplicated = false;
-      for(var j = 0; j <oldRows.length ;j++)
-      {
-            if(rows[i][0] == oldRows[j][0])
-            {
-                duplicated = true
-                oldRows[j][2] = rows[i][2];
-            }
-      }
-      if(!duplicated){
-        newRows.push(rows[i])
-      }
-  }
-  afterEdits = sheet.getRange(3,1,oldRows.length,6).setValues(oldRows);
-  if(newRows.length > 0){
-    dataRange = sheet.getRange(lr+3,1,newRows.length,6).setValues(newRows);
-  }
-
 }
 
-function udapteOpen(open){
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Open Applications"); // write sheet name 
-  var newRows = [];
-  for(var i = 0; i < open.length; i++){
-      newRows.push([open[i].id, open[i].person.full_name, open[i].status, open[i].created_at])
-  }
-  var lr = getLastRow(sheet);
-  var range = sheet.getRange(3,1,lr,4)
-  range.clearContent()
-  range = sheet.getRange(3,1,newRows.length,4).setValues(newRows);
-
-}
 
 function getLastRow(sheet)
 { 
@@ -423,6 +331,131 @@ function getLastRow(sheet)
 function onOpen() {  
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Run')
-      .addItem("Run the code", 'main')
+      .addItem("Run the main code", 'main')
+      .addItem("Run the permissions code", 'updatePermissions')
       .addToUi();
 }
+
+function getLastRowOfCol(sheet){
+    let data = sheet.getRange(2,8,30,1).getDisplayValues()
+    let i = 0
+    while(data[i][0]!=""){
+      i++
+    }
+    return i+1
+  }
+
+function updatePermissions(){
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("References")
+  const lastRowForECBTeamColumn = getLastRowOfCol(sheet)
+  const ecbTeam = sheet.getRange(2,8,lastRowForECBTeamColumn-1,1).getDisplayValues()
+  const icxranges = sheet.getRange(2,9,19,2).getDisplayValues()
+  const ogxranges = sheet.getRange(2,11,18,2).getDisplayValues()
+  const standardRangesEBEdits = sheet.getRange(2,13,16,1).getDisplayValues()
+  const standardRangesECBTeam = sheet.getRange(19,13).getDisplayValue()
+  const documentsRange = sheet.getRange(2,14).getDisplayValue()
+  var eb = sheet.getRange(35,4,sheet.getLastRow()-34,1).getDisplayValues()
+
+  eb.forEach((item,index)=>{
+        eb[index][0] = item[0].replace(" ","")              
+    })
+  
+  
+  //Deleting the ones that have accesses
+    var editors = SpreadsheetApp.getActiveSpreadsheet().getEditors().toString().split(",")
+    for(let i = 0;i<editors.length;i++){
+      SpreadsheetApp.getActiveSpreadsheet().removeEditor(editors[i])
+    }
+
+    var viewers = SpreadsheetApp.getActiveSpreadsheet().getViewers().toString().split(",")
+    for(let i = 0;i<viewers.length;i++){
+      SpreadsheetApp.getActiveSpreadsheet().removeViewer(viewers[i])
+    }
+
+    for(let i = 0;i<eb.length;i++){
+      SpreadsheetApp.getActiveSpreadsheet().addViewer(eb[i][0])
+    }
+
+
+  
+  
+  var icx = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("ICX Database/Auditing")
+  var protections = icx.getProtections(SpreadsheetApp.ProtectionType.RANGE);
+  for (var i = 0; i < protections.length; i++) {
+    var protection = protections[i];
+    protection.remove(); 
+  }
+
+  var ogx = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("OGX Database/Auditing")
+  var protections = ogx.getProtections(SpreadsheetApp.ProtectionType.RANGE);
+  for (var i = 0; i < protections.length; i++) {
+    var protection = protections[i];
+    protection.remove();
+  }
+
+  var ogx = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("OGX Standards Tracker")
+  var protections = ogx.getProtections(SpreadsheetApp.ProtectionType.RANGE);
+  for (var i = 0; i < protections.length; i++) {
+    var protection = protections[i];
+    protection.remove();
+  }
+  var icx = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("ICX Standards Tracker")
+  var protections = icx.getProtections(SpreadsheetApp.ProtectionType.RANGE);
+  for (var i = 0; i < protections.length; i++) {
+    var protection = protections[i];
+    protection.remove();
+  }
+  
+  Logger.log("ICX Ranges")
+  for(let j = 0; j < icxranges.length;j++){
+    let range = SpreadsheetApp.getActive().getRange(`ICX Database/Auditing!${icxranges[j][1]}`)
+    let protection = range.protect()
+    for(let i = 0; i < ecbTeam.length;i++){
+      SpreadsheetApp.getActiveSpreadsheet().addEditor(ecbTeam[i][0])
+      protection.addEditor(ecbTeam[i][0])
+    }
+  }
+  Logger.log("OGX Ranges")
+  for(let j = 0; j < ogxranges.length;j++){
+      let range = SpreadsheetApp.getActive().getRange(`OGX Database/Auditing!${ogxranges[j][1]}`)
+      let protection = range.protect()
+      for(let i = 0; i < ecbTeam.length;i++){
+        protection.addEditor(ecbTeam[i][0])
+      }
+  }
+
+  Logger.log("Standards EB Ranges")
+  
+  for(let j = 0; j < standardRangesEBEdits.length;j++){
+    let rangeOGX = SpreadsheetApp.getActive().getRange(`OGX Standards Tracker!${standardRangesEBEdits[j][0]}`)
+    let protectionOGX = rangeOGX.protect()
+    let rangeICX = SpreadsheetApp.getActive().getRange(`ICX Standards Tracker!${standardRangesEBEdits[j][0]}`)
+    let protectionICX = rangeICX.protect()
+    for(let i = 0; i < eb.length;i++){
+      protectionOGX.addEditor(eb[i][0])
+      protectionICX.addEditor(eb[i][0])
+    }
+  }
+
+  Logger.log("Standards ECB Ranges")
+  var documents = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("IPS & OPS & Accommdation")
+  var protections = documents.getProtections(SpreadsheetApp.ProtectionType.RANGE);
+  for (var i = 0; i < protections.length; i++) {
+    var protection = protections[i];
+    protection.remove();
+  }
+
+  var rangeICX = SpreadsheetApp.getActive().getRange(`ICX Standards Tracker!${standardRangesECBTeam}`)
+  var protectionICX = rangeICX.protect()
+  var rangeOGX = SpreadsheetApp.getActive().getRange(`OGX Standards Tracker!${standardRangesECBTeam}`)
+  var protectionOGX = rangeOGX.protect()
+  var rangeDocuments = SpreadsheetApp.getActive().getRange(`IPS & OPS & Accommdation!${documentsRange}`)
+  var protectionDocuments = rangeDocuments.protect()
+  for(let i = 0; i < ecbTeam.length;i++){
+    protectionICX.addEditor(ecbTeam[i][0])
+    protectionOGX.addEditor(ecbTeam[i][0])
+    protectionDocuments.addEditor(ecbTeam[i][0])
+  }
+
+}
+ 
