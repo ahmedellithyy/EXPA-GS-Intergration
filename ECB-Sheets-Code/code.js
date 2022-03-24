@@ -319,7 +319,6 @@ function getLastRowOfCol(sheet){
     }
     return i+1
   }
-
 function updatePermissions(){
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("References")
   const lastRowForECBTeamColumn = getLastRowOfCol(sheet)
@@ -347,10 +346,12 @@ function updatePermissions(){
       SpreadsheetApp.getActiveSpreadsheet().removeViewer(viewers[i])
     }
 
-    for(let i = 0;i<eb.length;i++){
-      SpreadsheetApp.getActiveSpreadsheet().addViewer(eb[i][0])
-    }
 
+
+
+    for(let i = 0;i<eb.length;i++){
+      SpreadsheetApp.getActiveSpreadsheet().addEditor(eb[i][0])
+    }
 
   
   
@@ -380,7 +381,8 @@ function updatePermissions(){
     var protection = protections[i];
     protection.remove();
   }
-  
+
+
   Logger.log("ICX Ranges")
   for(let j = 0; j < icxranges.length;j++){
     let range = SpreadsheetApp.getActive().getRange(`ICX Database/Auditing!${icxranges[j][1]}`)
@@ -390,6 +392,8 @@ function updatePermissions(){
       protection.addEditor(ecbTeam[i][0])
     }
   }
+
+
   Logger.log("OGX Ranges")
   for(let j = 0; j < ogxranges.length;j++){
       let range = SpreadsheetApp.getActive().getRange(`OGX Database/Auditing!${ogxranges[j][1]}`)
@@ -411,8 +415,6 @@ function updatePermissions(){
       protectionICX.addEditor(eb[i][0])
     }
   }
-
-  Logger.log("Standards ECB Ranges")
   var documents = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("IPS & OPS & Accommdation")
   var protections = documents.getProtections(SpreadsheetApp.ProtectionType.RANGE);
   for (var i = 0; i < protections.length; i++) {
@@ -432,5 +434,23 @@ function updatePermissions(){
     protectionDocuments.addEditor(ecbTeam[i][0])
   }
 
+  Logger.log("ICX Ranges")
+  var icxSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(`ICX Database/Auditing`)
+  var protections = icxSheet.getProtections(SpreadsheetApp.ProtectionType.RANGE);
+  for(let j = 0; j < protections.length;j++){
+    for(let i = 0; i < eb.length;i++){
+      protections[j].removeEditor(eb[i][0])
+    }
+  }
+
+
+  Logger.log("OGX Ranges")
+  var ogxSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(`OGX Database/Auditing`)
+  var protections = ogxSheet.getProtections(SpreadsheetApp.ProtectionType.RANGE);
+  for(let j = 0; j < protections.length;j++){
+      for(let i = 0; i < eb.length;i++){
+        protections[j].removeEditor(eb[i][0])
+      }
+  }
+
 }
- 
